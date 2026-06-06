@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StickerDef, StickerInstance, FAMILY_IDS } from '../data/stickers';
+import { ALL_STICKERS, StickerDef, StickerInstance, FAMILY_IDS } from '../data/stickers';
 import {
   generateAIOffer,
   calcDefValue,
@@ -41,6 +41,12 @@ const AI_MSG = {
     "I'll keep this one then! 💪",
     'Aww... okay then~ 🌸',
   ],
+  haggle: [
+    'Oh? You want MORE? 👀',
+    'Fine, take another! 🎁',
+    'Pushing your luck~ ✨',
+    'More stickers? Okay okay! 🌸',
+  ],
 };
 
 interface GameState {
@@ -68,6 +74,7 @@ interface GameState {
   rejectTrade: () => void;
   equipSkin: (skinId: string) => void;
   clearNewUnlock: () => void;
+  addAICard: () => void;
   resetGame: () => void;
 }
 
@@ -201,6 +208,20 @@ export const useGameStore = create<GameState>()(
       },
 
       clearNewUnlock: () => set({ newlyUnlockedSkinId: null }),
+
+      addAICard: () => {
+        const { aiOffer, playerOffer } = get();
+        const existingIds = new Set(aiOffer.map(s => s.id));
+        const available = ALL_STICKERS.filter(s => !existingIds.has(s.id));
+        const pool = available.length > 0 ? available : ALL_STICKERS;
+        const extra = pool[Math.floor(Math.random() * pool.length)];
+        const newAIOffer = [...aiOffer, extra];
+        set({
+          aiOffer: newAIOffer,
+          willingnessLevel: computeWillingness(playerOffer, newAIOffer),
+          aiMessage: rand(AI_MSG.haggle),
+        });
+      },
     }),
     {
       name: 'kawaii-sticker-game-v1',
