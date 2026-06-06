@@ -1,99 +1,133 @@
-# Kawaii Sticker Trader — PRD
+# Kawaii Sticker Trader — Product Requirements Document
 
-## Original Problem Statement
-A 2D casual mobile game built with React Native + Expo. Players collect cute animal stickers 
-(White Bears, Fluffy Pups, Kitties, Frogs) in cozy food scenarios and trade them with an AI opponent ("Neko") 
-based on rarity and value. Kawaii/pastel aesthetic throughout.
+## Overview
+A 2D casual mobile game built with React Native + Expo where players collect cute animal stickers and trade them with a rule-based AI opponent named "Neko". The vibe is "kawaii" — soft pastel colors, fluffy animals, bubbly card borders.
 
-## Architecture & Tech Stack
-| Layer | Choice | Reason |
-|---|---|---|
-| Navigation | Expo Router (file-based) | Modern, type-safe, tab-aware |
-| State | Zustand v4 + AsyncStorage persist | Lightweight, persisted local state |
-| Animations | react-native-reanimated 4.x | 60fps spring/repeat animations |
-| Fonts | @expo-google-fonts/fredoka + nunito | Kawaii rounded typography |
-| Gradients | expo-linear-gradient | Rarity card backgrounds |
+---
 
-## Folder Structure
-```
-frontend/
-├── app/
-│   ├── _layout.tsx           ← Font loading, SafeArea, GestureHandler root
-│   ├── index.tsx             ← Home/splash screen
-│   └── (tabs)/
-│       ├── _layout.tsx       ← Tab navigator (Trade / Stickerdex / Skins)
-│       ├── trade.tsx         ← Main game screen
-│       ├── stickerdex.tsx    ← Collection book
-│       └── skins.tsx         ← Paw skin cosmetics
-└── src/
-    ├── constants/theme.ts    ← Design tokens (colors, spacing, radii, shadows)
-    ├── data/stickers.ts      ← 24 sticker definitions + StickerDef/StickerInstance types
-    ├── data/skins.ts         ← 5 paw skin definitions
-    ├── store/gameStore.ts    ← Zustand store (all game state + actions)
-    ├── utils/tradeEngine.ts  ← Trade math: calcValue, generateAIOffer, computeWillingness
-    └── components/
-        ├── StickerCard.tsx       ← Bubbly sticker card (all sizes, locked/selected states)
-        ├── RarityBadge.tsx       ← Rarity pill badge
-        ├── AIPawZone.tsx         ← AI section (paw animation + speech bubble + WillingnessBar)
-        ├── WillingnessBar.tsx    ← Animated haggle meter (0–100%, color transitions)
-        ├── TradeTableZone.tsx    ← Trade table (AI side + player bundle + accept/reject)
-        └── InventoryScroll.tsx   ← Horizontal inventory with [+] add-to-trade buttons
-```
+## Tech Stack
+- **Frontend**: React Native, Expo Router (file-based routing), Expo SDK 54
+- **Animations**: React Native Reanimated v4.1.7 (with `newArchEnabled: true`)
+- **State**: Zustand v4.5.2 with Zustand persist middleware + AsyncStorage
+- **Fonts**: Fredoka (display), Nunito (body) via @expo-google-fonts
+- **No Backend**: Client-only, rule-based AI logic
 
-## Core Game Data
-- **24 Stickers**: 4 families × 6 rarities (2 Common, 2 Uncommon, 1 Rare, 1 Legendary)
-- **Rarity Values**: Common=1, Uncommon=3, Rare=9, Legendary=27
-- **AI Scaling**: Trades 0–5=Common, 6–11=Uncommon, 12–17=Rare, 18+=Legendary
+---
 
-## Willingness Meter Math
+## Core Screens
+
+### 1. Home Screen (`app/index.tsx`)
+- Kawaii gradient background (pink → lavender → mint)
+- Floating animal emoji decorations (animated via Reanimated)
+- Title: "Kawaii Sticker Trader"
+- "Start Trading!" / "Continue Trading!" button
+- Returns player stats (trade count, stickers collected, % complete) for returning players
+- Reset game option
+
+### 2. Trade Screen (`app/(tabs)/trade.tsx`)
+Main gameplay loop:
+- **AI Paw Zone**: Shows "Neko" paw icon, animated speech bubble, offered sticker card with rarity-colored value pill
+- **Willingness Bar**: Animated 0→100 bar with colour gradient (pink → mint → bright green at 100%)
+- **Trade Table**: Split view showing AI's offer vs player's staged bundle with Accept/Reject buttons
+- **Inventory Scroll**: Horizontal strip of all player stickers, each with a "+" toggle button
+
+### 3. Stickerdex (`app/(tabs)/stickerdex.tsx`)
+Collection tracker:
+- Progress bar (N/24 collected)
+- Family filter chips: All / White Bears / Fluffy Pups / Kitties / Frogs
+- 4-column grid showing all 24 stickers; locked stickers greyed with lock overlay
+
+### 4. Skins (`app/(tabs)/skins.tsx`)
+Cosmetic reward system:
+- 2-column grid of 5 paw skin cards
+- Tap to equip unlocked skins; locked skins show unlock condition
+
+---
+
+## Game Data (`src/data/stickers.ts`)
+
+### 24 Stickers across 4 Families × 6 per family (C/C/U/U/R/L)
+| ID | Family | Scenario | Rarity |
+|----|--------|----------|--------|
+| wb_1..wb_6 | White Bears | Blueberry → Cream Puff Cloud | C C U U R L |
+| fp_1..fp_6 | Fluffy Pups | Donut → Rainbow Pancake | C C U U R L |
+| kt_1..kt_6 | Kitties | Teacup → Star Cake | C C U U R L |
+| fr_1..fr_6 | Frogs | Mushroom → Boba Cup | C C U U R L |
+
+### Rarity Values
+- Common = 1
+- Uncommon = 3
+- Rare = 9
+- Legendary = 27
+
+---
+
+## AI Willingness Meter (`src/utils/tradeEngine.ts`)
+
 ```
 base     = (playerOfferValue / aiOfferValue) × 100
-bonus    = +10 if any player sticker shares Family with AI's sticker  
-penalty  = −20 if player offers exactly 1 card AND playerValue < aiValue
-final    = clamp(0, 100, base + bonus − penalty)
-ACCEPT   = only enabled when final ≥ 100
+bonus    = +10% if any player sticker shares family with AI's sticker
+penalty  = −20% if single card offered AND playerValue < aiValue
+final    = clamp(0, 100)
 ```
 
-## Paw Skin Unlock Conditions
-| Skin | Condition |
-|---|---|
-| Pink Paw | Default (always unlocked) |
-| Golden Paw | Complete 5 trades |
-| Crystal Paw | Complete any full sticker family |
-| Rainbow Paw | Complete 15 trades |
-| Galaxy Paw | Collect all 4 Legendary stickers |
+- **Accept button** is DISABLED unless willingness >= 100
+- Labels: "No interest..." / "Not feeling it..." / "Hmm, maybe..." / "Getting warmer!" / "DEAL!"
 
-## What's Been Implemented (as of 2026-06-06)
-- ✅ Full game loop: AI offer → player bundles stickers → willingness meter → accept/reject
-- ✅ Animated WillingnessBar with colour interpolation (pink→peach→mint→green)
-- ✅ Multi-sticker bundling: player can add N stickers to match high-value AI offers
-- ✅ StickerCard component with bubbly white border + rarity gradient backgrounds
-- ✅ AIPawZone with spring paw animation + speech bubble
-- ✅ Inventory horizontal scroll with [+] / [✓] per-sticker add/remove buttons
-- ✅ Stickerdex collection grid with family filter chips + locked silhouettes
-- ✅ Paw skin unlock & equip system
-- ✅ AsyncStorage persistence (trade count, inventory, collected IDs, unlocked skins)
-- ✅ Family completion + trade milestone unlock detection
-- ✅ Kawaii home screen with Fredoka/Nunito fonts + floating emoji decorations
-- ✅ zustand ESM fix (patched package.json to remove .mjs import conditions)
+---
 
-## Known Issues / Non-blocking
-- `shadow*` style props produce web deprecation warnings (→ should use `boxShadow`)
-- `props.pointerEvents` deprecation (→ should use `style.pointerEvents`)
+## Paw Skins (`src/data/skins.ts`)
 
-## Prioritized Backlog
-### P0 — Next session
-- [ ] Fix shadow* → boxShadow for web
-- [ ] Add sticker detail view on tap in Stickerdex (scenario text + rarity info)
+| ID | Name | Emoji | Unlock Condition |
+|----|------|-------|-----------------|
+| pink | Pink Paw | Paw | Default (always unlocked) |
+| golden | Golden Paw | Star | 5 trades completed |
+| crystal | Crystal Paw | Gem | Complete any full sticker family |
+| rainbow | Rainbow Paw | Rainbow | 15 trades completed |
+| galaxy | Galaxy Paw | Star2 | Collect all 4 Legendary stickers |
 
-### P1 — Phase 2
-- [ ] Haptic feedback on trade accept/reject (expo-haptics)
-- [ ] Particle/confetti effect on legendary sticker trade
-- [ ] "Pack opening" daily bonus mechanic (give player 3 random Commons/day)
-- [ ] AI personality dialogue expansion (more messages per rarity tier)
+---
 
-### P2 — Phase 3
-- [ ] Backend + user accounts (save progress across devices)
-- [ ] Real illustrated sticker art (replace emoji with actual kawaii illustrations)
-- [ ] Sound effects (cute SFX for trade accept, reject, unlock)
-- [ ] Leaderboard (most trades, most legendaries collected)
+## State Management (`src/store/gameStore.ts`)
+Persisted keys: `initialized`, `tradeCount`, `inventory`, `collectedIds`, `unlockedSkinIds`, `equippedSkinId`
+
+Key actions: `initGame`, `startNewRound`, `addToPlayerOffer`, `removeFromPlayerOffer`, `acceptTrade`, `rejectTrade`, `equipSkin`, `clearNewUnlock`, `resetGame`
+
+---
+
+## Progression Design
+- Round 1-5: AI offers Common stickers only
+- Round 6-11: AI offers Uncommon stickers
+- Round 12-17: AI offers Rare stickers
+- Round 18+: AI offers Legendary stickers
+- AI always offers uncollected stickers first (discovery mechanic)
+- If inventory runs low after trade, guaranteed extras are added
+
+---
+
+## Current Status (v1.0 - MVP)
+All core features implemented and tested:
+- Home screen with kawaii animations
+- Trade screen with all 3 zones (AI zone, Trade Table, Inventory Scroll)
+- Willingness meter with math rules
+- Multi-sticker bundling
+- Accept/Reject trade with state update
+- Stickerdex collection tracker
+- Paw skins with unlock logic
+- Local persistence (Zustand + AsyncStorage)
+- Reanimated v4 animations throughout
+
+---
+
+## Backlog / Future Features
+- P1: Unlock animation for new paw skins (celebratory particle effect)
+- P2: expo-audio integration for sound effects (accept/reject/card flip)
+- P2: Expand sticker catalog (more families, seasonal variants)
+- P3: Persistent high score / milestone achievements tracker
+
+---
+
+## Known Issues / Tech Notes
+- Web preview requires ~12 seconds to load due to large JS bundle (6.81 MB)
+- babel-preset-expo in SDK 54 auto-adds react-native-worklets/plugin -- do NOT add manually
+- Console deprecation warnings (non-blocking): shadow props and pointerEvents
