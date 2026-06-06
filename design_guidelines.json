@@ -1,0 +1,134 @@
+{
+  "theme": "Light",
+  "archetype": "3 (Pastel & Soft)",
+  "design_philosophy": "A cozy, healing mobile game experience emphasizing fluffy, bubbly aesthetics. Use exaggerated rounded corners, translucent 'bubble' borders, and soft pastel color palettes to evoke warmth and safety. High-readability with dark navy/charcoal text over creamy backgrounds. Visual tension is created through scale (large bubbly cards vs. tiny floating sparkles) and organic, non-rigid layouts.",
+  "colors": {
+    "background_primary": "#FFF5F5",
+    "background_secondary": "#FFFFFF",
+    "surface_cloud": "rgba(255, 255, 255, 0.85)",
+    "primary_accent": "#FFB7B2",
+    "secondary_accent": "#B5EAD7",
+    "warning_accent": "#FFDAC1",
+    "text_main": "#2D3436",
+    "text_muted": "#636E72",
+    "border_bubble": "rgba(255, 255, 255, 0.9)",
+    "rarity": {
+      "common": "#E2F0CB",
+      "uncommon": "#B5EAD7",
+      "rare": "#C7CEEA",
+      "legendary": "#FFD3B6"
+    }
+  },
+  "typography": {
+    "primary_font": "Fredoka",
+    "secondary_font": "Nunito",
+    "scales": {
+      "h1": { "fontSize": 36, "lineHeight": 44, "fontWeight": "800", "letterSpacing": -0.5 },
+      "h2": { "fontSize": 28, "lineHeight": 34, "fontWeight": "700" },
+      "h3": { "fontSize": 22, "lineHeight": 28, "fontWeight": "600" },
+      "body": { "fontSize": 16, "lineHeight": 24, "fontWeight": "500" },
+      "label": { "fontSize": 14, "lineHeight": 20, "fontWeight": "700", "textTransform": "uppercase", "letterSpacing": 1.5 }
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "2xl": 48
+  },
+  "border_radius": {
+    "sm": 12,
+    "md": 20,
+    "lg": 32,
+    "pill": 9999
+  },
+  "shadows": {
+    "soft_float": {
+      "shadowColor": "#FFB7B2",
+      "shadowOffset": { "width": 0, "height": 8 },
+      "shadowOpacity": 0.25,
+      "shadowRadius": 16,
+      "elevation": 8
+    },
+    "bubble_inset": {
+      "shadowColor": "#FFFFFF",
+      "shadowOffset": { "width": -2, "height": -2 },
+      "shadowOpacity": 0.9,
+      "shadowRadius": 4,
+      "elevation": 2
+    }
+  },
+  "motion_and_animations": {
+    "sticker_float": "Continuous smooth vertical translation using reanimated withRepeat and withTiming, duration 2000ms, displacement +/- 6px.",
+    "button_press": "Scale down to 0.92 using withSpring (damping: 12, stiffness: 200).",
+    "trade_accept": "Explosion of pastel confetti / scaling up of accepted sticker, fading out with timing.",
+    "ai_paw_reach": "TranslateY from -120 to 0 with a bouncy spring effect to signify AI placing a sticker onto the table."
+  },
+  "components": {
+    "StickerCard": {
+      "container_style": "Background color dynamically matches rarity. BorderRadius 24. BorderWidth 4, borderColor '#FFFFFF' (bubble effect). Apply 'soft_float' shadow.",
+      "image_style": "Fluffy character image, scaled to fill 80% of card, perfectly centered.",
+      "test_id": "sticker-card"
+    },
+    "TradeTable": {
+      "container_style": "Large rounded rectangle taking middle 40% of screen. Background 'surface_cloud' with blur (if expo-blur available) or solid white with 0.85 opacity. BorderWidth 3 of '#B5EAD7' (pastel mint).",
+      "drop_zone_style": "Dashed border inside the table to indicate where user places their sticker.",
+      "test_id": "trade-table-zone"
+    },
+    "ActionButtons": {
+      "accept_style": "Pill shape (borderRadius pill), 'primary_accent' background, large 'primary_font' text 'ACCEPT'.",
+      "reject_style": "Pill shape, white background with deep charcoal border, charcoal text 'REJECT'.",
+      "test_ids": ["trade-accept-button", "trade-reject-button"]
+    },
+    "InventoryScroller": {
+      "container_style": "Bottom 25% of screen. Horizontal ScrollView. PaddingHorizontal 16. Gap 12 between stickers. showsHorizontalScrollIndicator=false.",
+      "test_id": "inventory-horizontal-scroller"
+    },
+    "StickerdexGrid": {
+      "container_style": "Masonry or flexible wrap grid. Missing stickers use opacity 0.3 and tintColor '#A0AEC0' (silhouette effect).",
+      "test_id": "stickerdex-grid"
+    }
+  },
+  "media": {
+    "backgrounds": [
+      {
+        "url": "https://images.pexels.com/photos/1831234/pexels-photo-1831234.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Serene pastel pink cloud background - use for main Trade Screen",
+        "category": "trade_screen_bg"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1624087180397-67cf99a7acba?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwyfHxwYXN0ZWwlMjBjbG91ZCUyMGJhY2tncm91bmQlMjBjb3p5fGVufDB8fHx8MTc4MDc2NTAwNHww&ixlib=rb-4.1.0&q=85",
+        "description": "White clouds and blue sky - use for Stickerdex Collection Background",
+        "category": "stickerdex_bg"
+      }
+    ],
+    "stickers_and_paws": [
+      {
+        "url": "https://images.unsplash.com/photo-1773782285485-70dd6ddaeefd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwxfHxrYXdhaWklMjBmbHVmZnklMjB3aGl0ZSUyMGFuaW1hbCUyMHBhc3RlbHxlbnwwfHx8fDE3ODA3NjUwMDR8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Fluffy white cat paw with pink pads - use for AI opponent paw coming from top",
+        "category": "ai_paw_graphic"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1744390708895-b1fdec0eb37c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHw0fHxrYXdhaWklMjBmbHVmZnklMjB3aGl0ZSUyMGFuaW1hbCUyMHBhc3RlbHxlbnwwfHx8fDE3ODA3NjUwMDR8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Hello Kitty latte art / cute creature - use as sample Legendary sticker",
+        "category": "sample_sticker_legendary"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1587618420325-97ac1ea3cd80?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwzfHxrYXdhaWklMjBmbHVmZnklMjB3aGl0ZSUyMGFuaW1hbCUyMHBhc3RlbHxlbnwwfHx8fDE3ODA3NjUwMDR8MA&ixlib=rb-4.1.0&q=85",
+        "description": "White fluffy sheep face - use as sample Common sticker",
+        "category": "sample_sticker_common"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Write standard .js files for React Native Expo, mapping these design tokens to StyleSheet objects or inline styles.",
+    "Ensure react-native-reanimated is fully configured and use it for all bouncy and floating micro-interactions (e.g. useSharedValue, useAnimatedStyle).",
+    "Integrate 'Fredoka' and 'Nunito' via expo-font (or fallback to rounded system fonts temporarily while loading) to maintain the kawaii aesthetic.",
+    "Implement the Trade loop logic visually: The AI paw animates from the top holding a sticker. The user selects one from the bottom horizontal scroller to place in the middle trade table. AI evaluates using rarity values.",
+    "Avoid sharp edges entirely. All UI cards, buttons, and images must have generous border radii (24-32px).",
+    "Apply `data-testid` props to all interactive elements for testing (e.g., testID='trade-accept-button').",
+    "Layer the provided cloud backgrounds using ImageBackground with a soft semi-transparent overlay (rgba(255,255,255,0.4)) so the colorful stickers and text remain highly legible."
+  ]
+}
