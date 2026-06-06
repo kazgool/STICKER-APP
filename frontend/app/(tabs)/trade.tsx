@@ -22,6 +22,8 @@ import { useGameStore } from '../../src/store/gameStore';
 import { StickerCard } from '../../src/components/StickerCard';
 import { PAW_SKIN_EMOJIS, COLORS, SPACING, RADII, SHADOWS } from '../../src/constants/theme';
 import { StickerInstance, StickerDef, RARITY_VALUES } from '../../src/data/stickers';
+import { useAudio } from '../../src/audio/AudioContext';
+import { UnlockCelebration } from '../../src/components/UnlockCelebration';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ZONE 1  Willingness Bar  — 90 % width, centred, full Reanimated fills
@@ -606,6 +608,7 @@ export default function TradeScreen() {
     newlyUnlockedSkinId, clearNewUnlock,
   } = useGameStore();
 
+  const { playYay, playAww, playPop } = useAudio();
   const { width: screenWidth } = useWindowDimensions();
   const fanContainerWidth      = screenWidth - SPACING.md * 2;
 
@@ -637,6 +640,27 @@ export default function TradeScreen() {
   const aiValue     = aiOffer.reduce((s, sk) => s + RARITY_VALUES[sk.rarity], 0);
   const playerValue = playerOffer.reduce((s, sk) => s + RARITY_VALUES[sk.rarity], 0);
   const isReady     = willingnessLevel >= 100;
+
+  // ── Sound-wrapped action handlers ─────────────────────────────────
+  const handleAccept = () => {
+    const ok = acceptTrade();
+    if (ok) playYay();
+  };
+
+  const handleReject = () => {
+    rejectTrade();
+    playAww();
+  };
+
+  const handleCardTap = (inst: StickerInstance) => {
+    addToPlayerOffer(inst);
+    playPop();
+  };
+
+  const handleRemoveFromOffer = (instanceId: string) => {
+    removeFromPlayerOffer(instanceId);
+    playPop();
+  };
 
   return (
     <SafeAreaView style={sc.safe} edges={['top']}>
@@ -682,16 +706,16 @@ export default function TradeScreen() {
         playerValue={playerValue}
         aiValue={aiValue}
         isReady={isReady}
-        onRemove={removeFromPlayerOffer}
+        onRemove={handleRemoveFromOffer}
       />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {/* ZONE 3 — Action Bar  [X] [+] [▶]  always visible             */}
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <ActionBar
-        onReject={rejectTrade}
+        onReject={handleReject}
         onHaggle={addAICard}
-        onAccept={acceptTrade}
+        onAccept={handleAccept}
         isReady={isReady}
       />
 
@@ -701,10 +725,17 @@ export default function TradeScreen() {
       <CardFan
         inventory={inventory}
         playerOffer={playerOffer}
-        onCardTap={addToPlayerOffer}
+        onCardTap={handleCardTap}
         containerWidth={fanContainerWidth}
         equippedSkinEmoji={skinEmoji}
       />
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* CONFETTI CELEBRATION — full-screen overlay, pointer-events off */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {newlyUnlockedSkinId != null && (
+        <UnlockCelebration skinId={newlyUnlockedSkinId} />
+      )}
 
     </SafeAreaView>
   );
