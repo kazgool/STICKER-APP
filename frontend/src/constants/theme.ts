@@ -32,25 +32,17 @@ export const SPACING = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 };
 export const RADII = { sm: 12, md: 20, lg: 28, xl: 36, pill: 9999 };
 
 export const SHADOWS = {
+  // RN 0.76+ boxShadow (replaces deprecated shadow* props)
   soft: {
-    shadowColor: '#FFB7B2',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
+    boxShadow: '0 4px 10px rgba(255,183,178,0.22)',
     elevation: 6,
   },
   float: {
-    shadowColor: '#C7CEEA',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 16,
+    boxShadow: '0 8px 16px rgba(199,206,234,0.28)',
     elevation: 10,
   },
   card: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
     elevation: 4,
   },
 };

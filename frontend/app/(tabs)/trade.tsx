@@ -120,10 +120,7 @@ const dw = StyleSheet.create({
     borderRadius:  RADII.lg,
     borderWidth:   1.5,
     borderColor:   'rgba(200,110,175,0.30)',
-    shadowColor:   '#C070A0',
-    shadowOffset:  { width: 0, height: 1 },
-    shadowOpacity: 0.16,
-    shadowRadius:  4,
+    boxShadow:     '0 1px 4px rgba(192,112,160,0.16)',
     elevation:     2,
   },
   gradient: {
@@ -228,10 +225,7 @@ const wb = StyleSheet.create({
     borderWidth:   1,
     borderColor:   'rgba(160,80,140,0.22)',
     overflow:      'hidden',
-    shadowColor:   '#A06080',
-    shadowOffset:  { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius:  2,
+    boxShadow:     '0 1px 2px rgba(160,96,128,0.12)',
     elevation:     1,
   },
   trackGrad:  { height: 14, borderRadius: 6, flexDirection: 'row', overflow: 'hidden' },
@@ -326,10 +320,7 @@ const aiS = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical:   2,
     borderRadius:      RADII.pill,
-    shadowColor:       '#E07090',
-    shadowOffset:      { width: 0, height: 2 },
-    shadowOpacity:     0.28,
-    shadowRadius:      4,
+    boxShadow:         '0 2px 4px rgba(224,112,144,0.28)',
     elevation:         3,
   },
   nameText: { color: '#FFF', fontSize: 10, fontWeight: '700', fontFamily: 'Nunito_700Bold' },
@@ -340,12 +331,9 @@ const aiS = StyleSheet.create({
     borderRadius: RADII.md,
     borderWidth:  2,
     borderColor:  'rgba(255,183,178,0.65)',
-    shadowColor:  '#D07090',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.20,
-    shadowRadius:  7,
-    elevation:     5,
-    overflow:      'hidden',
+    boxShadow:    '0 3px 7px rgba(208,112,144,0.20)',
+    elevation:    5,
+    overflow:     'hidden',
   },
   bubbleGrad: {
     flex:             1,
@@ -381,10 +369,7 @@ const aiS = StyleSheet.create({
     paddingVertical:   4,
     borderRadius:      RADII.pill,
     borderWidth:       1.5,
-    shadowColor:       '#C090B0',
-    shadowOffset:      { width: 0, height: 2 },
-    shadowOpacity:     0.18,
-    shadowRadius:      4,
+    boxShadow:         '0 2px 4px rgba(192,144,176,0.18)',
     elevation:         3,
   },
   valueText: { fontSize: 13, fontWeight: '800', fontFamily: 'Nunito_700Bold' },
@@ -613,10 +598,7 @@ const z3 = StyleSheet.create({
   pillowShell: {
     flex:          1,
     borderRadius:  RADII.md,
-    shadowColor:   '#C070A8',
-    shadowOffset:  { width: 0, height: 4 },
-    shadowOpacity: 0.24,
-    shadowRadius:  8,
+    boxShadow:     '0 4px 8px rgba(192,112,168,0.24)',
     elevation:     7,
     overflow:      'hidden',
   },
@@ -763,10 +745,7 @@ const fanS = StyleSheet.create({
     borderTopRightRadius: RADII.lg,
     borderTopWidth:       2,
     borderColor:          'rgba(255,183,178,0.70)',
-    shadowColor:          '#C070A8',
-    shadowOffset:         { width: 0, height: -3 },
-    shadowOpacity:        0.15,
-    shadowRadius:         8,
+    boxShadow:            '0 -3px 8px rgba(192,112,168,0.15)',
     elevation:            6,
     overflow:             'hidden',
   },
@@ -777,10 +756,7 @@ const fanS = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical:   2,
     borderRadius:      RADII.pill,
-    shadowColor:       '#E07090',
-    shadowOffset:      { width: 0, height: 2 },
-    shadowOpacity:     0.25,
-    shadowRadius:      4,
+    boxShadow:         '0 2px 4px rgba(224,112,144,0.25)',
     elevation:         4,
   },
   countTxt:  { fontSize: 11, fontWeight: '800', color: '#FFF', fontFamily: 'Nunito_700Bold' },
@@ -796,11 +772,11 @@ const fanS = StyleSheet.create({
 // ─────────────────────────────────────────────────────────────────────────────
 export default function TradeScreen() {
   const {
-    initialized, initGame, startNewRound,
+    tradeCount, collectedIds,
     aiOffer, playerOffer, aiMessage, tradeStatus, willingnessLevel,
-    inventory, equippedSkinId, tradeCount, collectedIds,
+    inventory, equippedSkinId,
     addToPlayerOffer, removeFromPlayerOffer,
-    acceptTrade, rejectTrade, addAICard,
+    acceptTrade, rejectTrade, addAICard, startNewRound,
     newlyUnlockedSkinId, clearNewUnlock,
   } = useGameStore();
 
@@ -809,11 +785,24 @@ export default function TradeScreen() {
   const fanContainerWidth = screenWidth - SPACING.md * 2;
   const roundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Bootstrap ─────────────────────────────────────────────────────────────
+  // ── Bootstrap — wait for AsyncStorage hydration before initialising ───────
+  // Without this guard, initGame() would fire BEFORE persisted data is loaded,
+  // resetting the player's progress on every reload.
   useEffect(() => {
-    if (!initialized)              initGame();
-    else if (aiOffer.length === 0) startNewRound();
-  }, [initialized]);
+    const handleHydrated = () => {
+      const s = useGameStore.getState();
+      if (!s.initialized) s.initGame();
+      else if (s.aiOffer.length === 0) s.startNewRound();
+    };
+
+    // Subscribe to the "hydration finished" event (AsyncStorage is async)
+    const unsub = useGameStore.persist.onFinishHydration(handleHydrated);
+
+    // Also handle the synchronous / already-hydrated case (e.g. hot-reload)
+    if (useGameStore.persist.hasHydrated()) handleHydrated();
+
+    return unsub;
+  }, []);
 
   // ── Auto-advance after trade resolves ─────────────────────────────────────
   useEffect(() => {
@@ -943,10 +932,7 @@ const sc = StyleSheet.create({
     paddingVertical:   6,
     borderWidth:       1.5,
     borderColor:       'rgba(255,183,178,0.50)',
-    shadowColor:       '#D080A8',
-    shadowOffset:      { width: 0, height: 2 },
-    shadowOpacity:     0.18,
-    shadowRadius:      6,
+    boxShadow:         '0 2px 6px rgba(208,128,168,0.18)',
     elevation:         4,
     overflow:          'hidden',
   },
@@ -963,10 +949,7 @@ const sc = StyleSheet.create({
     paddingVertical:   4,
     borderWidth:       1.5,
     borderColor:       'rgba(255,183,178,0.45)',
-    shadowColor:       '#D080A8',
-    shadowOffset:      { width: 0, height: 2 },
-    shadowOpacity:     0.16,
-    shadowRadius:      5,
+    boxShadow:         '0 2px 5px rgba(208,128,168,0.16)',
     elevation:         3,
     overflow:          'hidden',
   },
@@ -980,10 +963,7 @@ const sc = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     borderWidth:       2,
     borderColor:       '#FFD54F',
-    shadowColor:       '#C09000',
-    shadowOffset:      { width: 0, height: 2 },
-    shadowOpacity:     0.18,
-    shadowRadius:      6,
+    boxShadow:         '0 2px 6px rgba(192,144,0,0.18)',
     elevation:         4,
   },
   toastTxt: {
